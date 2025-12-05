@@ -1,10 +1,9 @@
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::{
     DefaultTerminal, Frame,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::Stylize,
-    text::Line,
-    widgets::{Block, Borders, Paragraph},
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Style},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
 };
 use tui_input::Input;
 use tui_input::backend::crossterm::EventHandler;
@@ -18,18 +17,39 @@ fn main() -> color_eyre::Result<()> {
 }
 
 /// The main application which holds the state and logic of the application.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct App {
     /// Is the application running?
     running: bool,
     file_name_input: Input,
     active_field: usize,
+    type_items: Vec<String>,
+    type_state: ListState,
+    category_items: Vec<String>,
+    category_state: ListState,
+}
+
 impl Default for App {
     fn default() -> Self {
+        let mut type_state = ListState::default();
+        type_state.select(Some(0));
+
+        let mut category_state = ListState::default();
+        category_state.select(Some(0));
+
         Self {
             running: false,
             file_name_input: Input::default(),
             active_field: 0,
+            type_items: vec!["Todo".to_string(), "Ideas".to_string(), "Notes".to_string()],
+            type_state,
+            category_items: vec![
+                "Project".to_string(),
+                "Area".to_string(),
+                "Resource".to_string(),
+                "Archive".to_string(),
+            ],
+            category_state,
         }
     }
 }
@@ -48,6 +68,74 @@ impl App {
             self.handle_crossterm_events()?;
         }
         Ok(())
+    }
+
+    pub fn selected_type(&self) -> Option<&str> {
+        self.type_state
+            .selected()
+            .map(|i| self.type_items[i].as_str())
+    }
+
+    pub fn selected_category(&self) -> Option<&str> {
+        self.category_state
+            .selected()
+            .map(|i| self.category_items[i].as_str())
+    }
+
+    fn type_next(&mut self) {
+        let i = match self.type_state.selected() {
+            Some(i) => {
+                if i >= self.type_items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.type_state.select(Some(i));
+    }
+
+    fn type_previous(&mut self) {
+        let i = match self.type_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.type_items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.type_state.select(Some(i));
+    }
+
+    fn category_next(&mut self) {
+        let i = match self.category_state.selected() {
+            Some(i) => {
+                if i >= self.category_items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.category_state.select(Some(i));
+    }
+
+    fn category_previous(&mut self) {
+        let i = match self.category_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.category_items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.category_state.select(Some(i));
     }
 
     /// Renders the user interface.
@@ -105,14 +193,50 @@ impl App {
             ),
             form_layout[1],
         );
-        frame.render_widget(
-            Paragraph::new("Type").block(Block::new().borders(Borders::ALL)),
-            form_layout[2],
-        );
-        frame.render_widget(
-            Paragraph::new("PARA category").block(Block::new().borders(Borders::ALL)),
-            form_layout[3],
-        );
+
+        // Type List
+        let type_style = if self.active_field == 1 {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
+        let type_items: Vec<ListItem> = self
+            .type_items
+            .iter()
+            .map(|i| ListItem::new(i.as_str()))
+            .collect();
+        let type_list = List::new(type_items)
+            .block(
+                Block::new()
+                    .borders(Borders::ALL)
+                    .title("Type")
+                    .style(type_style),
+            )
+            .highlight_symbol(">> ")
+            .highlight_style(Style::default().fg(Color::Green));
+        frame.render_stateful_widget(type_list, form_layout[2], &mut self.type_state);
+
+        // Category List
+        let category_style = if self.active_field == 2 {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
+        let category_items: Vec<ListItem> = self
+            .category_items
+            .iter()
+            .map(|i| ListItem::new(i.as_str()))
+            .collect();
+        let category_list = List::new(category_items)
+            .block(
+                Block::new()
+                    .borders(Borders::ALL)
+                    .title("PARA category")
+                    .style(category_style),
+            )
+            .highlight_symbol(">> ")
+            .highlight_style(Style::default().fg(Color::Green));
+        frame.render_stateful_widget(category_list, form_layout[3], &mut self.category_state);
 
         frame.render_widget(
             Paragraph::new("List of files").block(Block::new().borders(Borders::ALL)),
@@ -154,11 +278,21 @@ impl App {
     /// Handles the key events and updates the state of [`App`].
     fn on_key_event(&mut self, key: KeyEvent) {
         match (key.modifiers, key.code) {
-            (_, KeyCode::Esc | KeyCode::Char('q'))
+            (_, KeyCode::Esc)
             | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
             (_, KeyCode::Tab) => {
                 self.active_field = (self.active_field + 1) % 3;
             }
+            (_, KeyCode::Down) => match self.active_field {
+                1 => self.type_next(),
+                2 => self.category_next(),
+                _ => {}
+            },
+            (_, KeyCode::Up) => match self.active_field {
+                1 => self.type_previous(),
+                2 => self.category_previous(),
+                _ => {}
+            },
             _ => {
                 if self.active_field == 0 {
                     self.file_name_input.handle_event(&Event::Key(key));
