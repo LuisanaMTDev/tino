@@ -51,46 +51,58 @@ impl App {
     fn render(&mut self, frame: &mut Frame) {
         let main_layout = Layout::new(
             Direction::Vertical,
-            [Constraint::Percentage(25), Constraint::Percentage(75)],
+            [
+                Constraint::Percentage(10),
+                Constraint::Percentage(20),
+                Constraint::Percentage(60),
+                Constraint::Percentage(10),
+            ],
         )
         .split(frame.area());
 
         let form_layout = Layout::new(
             Direction::Horizontal,
             [
+                Constraint::Percentage(10),
                 Constraint::Percentage(50),
                 Constraint::Fill(1),
                 Constraint::Fill(1),
+                Constraint::Percentage(10),
             ],
-        )
-        .split(main_layout[0]);
-
-        let files_list_and_preview_layout = Layout::new(
-            Direction::Horizontal,
-            [Constraint::Percentage(50), Constraint::Percentage(50)],
         )
         .split(main_layout[1]);
 
+        let files_list_and_preview_layout = Layout::new(
+            Direction::Horizontal,
+            [
+                Constraint::Percentage(10),
+                Constraint::Percentage(40),
+                Constraint::Percentage(40),
+                Constraint::Percentage(10),
+            ],
+        )
+        .split(main_layout[2]);
+
         frame.render_widget(
             Paragraph::new("File name").block(Block::new().borders(Borders::ALL)),
-            form_layout[0],
-        );
-        frame.render_widget(
-            Paragraph::new("Type").block(Block::new().borders(Borders::ALL)),
             form_layout[1],
         );
         frame.render_widget(
-            Paragraph::new("PARA category").block(Block::new().borders(Borders::ALL)),
+            Paragraph::new("Type").block(Block::new().borders(Borders::ALL)),
             form_layout[2],
+        );
+        frame.render_widget(
+            Paragraph::new("PARA category").block(Block::new().borders(Borders::ALL)),
+            form_layout[3],
         );
 
         frame.render_widget(
             Paragraph::new("List of files").block(Block::new().borders(Borders::ALL)),
-            files_list_and_preview_layout[0],
+            files_list_and_preview_layout[1],
         );
         frame.render_widget(
             Paragraph::new("File preview").block(Block::new().borders(Borders::ALL)),
-            files_list_and_preview_layout[1],
+            files_list_and_preview_layout[2],
         );
     }
 
