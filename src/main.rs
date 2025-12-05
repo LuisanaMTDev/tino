@@ -6,6 +6,8 @@ use ratatui::{
     text::Line,
     widgets::{Block, Borders, Paragraph},
 };
+use tui_input::Input;
+use tui_input::backend::crossterm::EventHandler;
 
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
@@ -20,6 +22,16 @@ fn main() -> color_eyre::Result<()> {
 pub struct App {
     /// Is the application running?
     running: bool,
+    file_name_input: Input,
+    active_field: usize,
+impl Default for App {
+    fn default() -> Self {
+        Self {
+            running: false,
+            file_name_input: Input::default(),
+            active_field: 0,
+        }
+    }
 }
 
 impl App {
@@ -44,10 +56,6 @@ impl App {
     ///
     /// - <https://docs.rs/ratatui/latest/ratatui/widgets/index.html>
     /// - <https://github.com/ratatui/ratatui/tree/main/ratatui-widgets/examples>
-    // TODO: Make the TUI size smaller but according with the columns and lines of the terminal
-    // so in smaller terminals will the TUI will be smaller and in bigger terminal will be bigger.
-    // TODO: Read this https://ratatui.rs/faq#how-do-i-avoid-panics-due-to-out-of-range-calls-on-the-buffer
-    // NOTE: https://crates.io/crates/tui-input for user text input.
     fn render(&mut self, frame: &mut Frame) {
         let main_layout = Layout::new(
             Direction::Vertical,
@@ -83,8 +91,18 @@ impl App {
         )
         .split(main_layout[2]);
 
+        let file_name_style = if self.active_field == 0 {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
         frame.render_widget(
-            Paragraph::new("File name").block(Block::new().borders(Borders::ALL)),
+            Paragraph::new(self.file_name_input.value()).block(
+                Block::new()
+                    .borders(Borders::ALL)
+                    .title("File name")
+                    .style(file_name_style),
+            ),
             form_layout[1],
         );
         frame.render_widget(
@@ -104,6 +122,18 @@ impl App {
             Paragraph::new("File preview").block(Block::new().borders(Borders::ALL)),
             files_list_and_preview_layout[2],
         );
+
+        let (cursor_x, cursor_y) = match self.active_field {
+            0 => {
+                let input = &self.file_name_input;
+                (
+                    form_layout[1].x + input.visual_cursor() as u16 + 1,
+                    form_layout[1].y + 1,
+                )
+            }
+            _ => (0, 0),
+        };
+        frame.set_cursor_position((cursor_x, cursor_y));
     }
 
     /// Reads the crossterm events and updates the state of [`App`].
@@ -126,8 +156,14 @@ impl App {
         match (key.modifiers, key.code) {
             (_, KeyCode::Esc | KeyCode::Char('q'))
             | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
-            // Add other key handlers here.
-            _ => {}
+            (_, KeyCode::Tab) => {
+                self.active_field = (self.active_field + 1) % 3;
+            }
+            _ => {
+                if self.active_field == 0 {
+                    self.file_name_input.handle_event(&Event::Key(key));
+                }
+            }
         }
     }
 
