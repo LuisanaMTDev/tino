@@ -1,5 +1,9 @@
+use std::fs::File;
+use std::path::PathBuf;
+
 use crate::app::config_file::ConfigFile;
 use crate::ratatui_app::app_and_rust_traits_impls::App;
+use chrono::Utc;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::prelude::{Constraint, Direction, Layout};
 use ratatui::{
@@ -7,6 +11,7 @@ use ratatui::{
     style::{Color, Style},
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
 };
+use softpath::prelude::*;
 use tui_input::Input;
 use tui_input::backend::crossterm::EventHandler;
 
@@ -275,8 +280,53 @@ impl App {
                 2 => self.category_previous(),
                 _ => {}
             },
+            (_, KeyCode::Enter) if self.active_field == 0 => match self.selected_type() {
+                Some("Todos") => {
+                    let file_name = self.file_name_input.value_and_reset();
+                    let mut todo_file_name = String::from("");
+
+                    let now = Utc::now();
+                    let timestamp = now.format("%Y-%m-%dT%H:%M:%S").to_string();
+
+                    if file_name.is_empty() && self.selected_category() == Some("") {
+                        todo_file_name = format!("{}.md", timestamp);
+                    } else if file_name.is_empty() {
+                        todo_file_name =
+                            format!("{} - {}.md", timestamp, self.selected_category().unwrap());
+                    } else if self.selected_category() == Some("") {
+                        todo_file_name = format!("{} {}.md", file_name, timestamp);
+                    } else {
+                        todo_file_name = format!(
+                            "{} {} - {}.md",
+                            file_name,
+                            timestamp,
+                            self.selected_category().unwrap()
+                        );
+                    }
+
+                    let bufpath = PathBuf::from(format!(
+                        "{}/{}",
+                        self.config_file
+                            .tino_dirs
+                            .todos_dir
+                            .into_path()
+                            .unwrap()
+                            .canonicalize()
+                            .unwrap()
+                            .display(),
+                        todo_file_name
+                    ));
+
+                    File::create(bufpath).unwrap();
+                }
+                Some("Ideas") => {}
+                Some("Notes") => {}
+                Some("") => {}
+                None => {}
+                _ => {}
+            },
             _ => {
-                if self.active_field == 0 {
+                if self.active_field == 0 && key.code != KeyCode::Enter {
                     self.file_name_input.handle_event(&Event::Key(key));
                 }
             }
