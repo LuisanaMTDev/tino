@@ -202,16 +202,24 @@ impl App {
             (_, KeyCode::Tab) => {
                 self.active_field = (self.active_field + 1) % 3;
             }
-            (_, KeyCode::Down) => match self.active_field {
-                1 => self.type_next(),
-                2 => self.category_next(),
-                _ => {}
-            },
-            (_, KeyCode::Up) => match self.active_field {
-                1 => self.type_previous(),
-                2 => self.category_previous(),
-                _ => {}
-            },
+            (_, KeyCode::Down | KeyCode::Char('j'))
+                if self.active_field == 1 || self.active_field == 2 =>
+            {
+                match self.active_field {
+                    1 => self.type_next(),
+                    2 => self.category_next(),
+                    _ => {}
+                }
+            }
+            (_, KeyCode::Up | KeyCode::Char('k'))
+                if self.active_field == 1 || self.active_field == 2 =>
+            {
+                match self.active_field {
+                    1 => self.type_previous(),
+                    2 => self.category_previous(),
+                    _ => {}
+                }
+            }
             (_, KeyCode::Enter) if self.active_field == 0 => match self.selected_type() {
                 Some("Todos") => {
                     let file_name = self.file_name_input.value_and_reset();
