@@ -1,17 +1,45 @@
+use crate::app::config_file::ConfigFile;
 use crate::ratatui_app::app_and_rust_traits_impls::App;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::prelude::{Constraint, Direction, Layout};
 use ratatui::{
     DefaultTerminal, Frame,
     style::{Color, Style},
-    widgets::{Block, Borders, List, ListItem, Paragraph},
+    widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
 };
+use tui_input::Input;
 use tui_input::backend::crossterm::EventHandler;
 
 impl App {
     /// Construct a new instance of [`App`].
-    pub fn new() -> Self {
-        Self::default()
+    pub fn new(config_file: ConfigFile) -> Self {
+        let mut type_state = ListState::default();
+        type_state.select(Some(0));
+
+        let mut category_state = ListState::default();
+        category_state.select(Some(0));
+
+        Self {
+            running: false,
+            active_field: 0,
+            config_file,
+            file_name_input: Input::default(),
+            type_items: vec![
+                "".to_string(),
+                "Todos".to_string(),
+                "Ideas".to_string(),
+                "Notes".to_string(),
+            ],
+            type_state,
+            category_items: vec![
+                "".to_string(),
+                "Project".to_string(),
+                "Area".to_string(),
+                "Resource".to_string(),
+                "Archive".to_string(),
+            ],
+            category_state,
+        }
     }
 
     /// Run the application's main loop.
