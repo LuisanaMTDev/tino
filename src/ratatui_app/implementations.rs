@@ -57,74 +57,6 @@ impl App {
         Ok(())
     }
 
-    pub fn selected_type(&self) -> Option<&str> {
-        self.type_state
-            .selected()
-            .map(|i| self.type_items[i].as_str())
-    }
-
-    pub fn selected_category(&self) -> Option<&str> {
-        self.category_state
-            .selected()
-            .map(|i| self.category_items[i].as_str())
-    }
-
-    fn type_next(&mut self) {
-        let i = match self.type_state.selected() {
-            Some(i) => {
-                if i >= self.type_items.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.type_state.select(Some(i));
-    }
-
-    fn type_previous(&mut self) {
-        let i = match self.type_state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.type_items.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.type_state.select(Some(i));
-    }
-
-    fn category_next(&mut self) {
-        let i = match self.category_state.selected() {
-            Some(i) => {
-                if i >= self.category_items.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.category_state.select(Some(i));
-    }
-
-    fn category_previous(&mut self) {
-        let i = match self.category_state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.category_items.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.category_state.select(Some(i));
-    }
-
     /// Renders the user interface.
     ///
     /// This is where you add new widgets. See the following resources for more information:
@@ -336,5 +268,73 @@ impl App {
     /// Set running to false to quit the application.
     fn quit(&mut self) {
         self.running = false;
+    }
+
+    pub fn selected_type(&self) -> Option<&str> {
+        self.type_state
+            .selected()
+            .map(|i| self.type_items[i].as_str())
+    }
+
+    pub fn selected_category(&self) -> Option<&str> {
+        self.category_state
+            .selected()
+            .map(|i| self.category_items[i].as_str())
+    }
+
+    fn type_next(&mut self) {
+        let i = match self.type_state.selected() {
+            Some(i) => {
+                if i >= self.type_items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.type_state.select(Some(i));
+    }
+
+    fn type_previous(&mut self) {
+        let i = match self.type_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.type_items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.type_state.select(Some(i));
+    }
+
+    fn category_next(&mut self) {
+        let i = match self.category_state.selected() {
+            Some(i) => {
+                if i >= self.category_items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.category_state.select(Some(i));
+    }
+
+    fn category_previous(&mut self) {
+        let i = match self.category_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.category_items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.category_state.select(Some(i));
     }
 }
