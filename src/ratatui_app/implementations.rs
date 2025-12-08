@@ -68,8 +68,8 @@ impl App {
             Direction::Vertical,
             [
                 Constraint::Percentage(10),
-                Constraint::Percentage(20),
-                Constraint::Percentage(60),
+                Constraint::Length(3),
+                Constraint::Percentage(70),
                 Constraint::Percentage(10),
             ],
         )
