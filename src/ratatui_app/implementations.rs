@@ -239,8 +239,44 @@ impl App {
 
                     File::create(bufpath).unwrap();
                 }
-                Some("Ideas") => {}
-                Some("Notes") => {}
+                Some("Ideas") => {
+                    let idea_file_name = self.generate_file_name();
+
+                    let bufpath = PathBuf::from(format!(
+                        "{}/{}",
+                        self.config_file
+                            .tino_dirs
+                            .ideas_dir
+                            .into_path()
+                            .unwrap()
+                            .canonicalize()
+                            .unwrap()
+                            .display(),
+                        idea_file_name
+                    ));
+
+                    File::create(bufpath).unwrap();
+                }
+                Some("Notes") => {
+                    let note_file_name = self.generate_file_name();
+
+                    let bufpath = PathBuf::from(format!(
+                        "{}/{}",
+                        self.config_file
+                            .tino_dirs
+                            .ideas_dir
+                            .into_path()
+                            .unwrap()
+                            .canonicalize()
+                            .unwrap()
+                            .display(),
+                        note_file_name
+                    ));
+
+                    File::create(bufpath).unwrap();
+                }
+                // This should be like this because these aren't valid options for a file type,
+                // code can be added to handle this cases but not creation of files (for now).
                 Some("") => {}
                 None => {}
                 _ => {}
