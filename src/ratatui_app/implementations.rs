@@ -223,7 +223,7 @@ impl App {
             (_, KeyCode::Enter) if self.active_field == 0 => match self.selected_type() {
                 Some("Todos") => {
                     let file_name = self.file_name_input.value_and_reset();
-                    let mut todo_file_name = String::from("");
+                    let todo_file_name: String;
 
                     let now = Utc::now();
                     let timestamp = now.format("%Y-%m-%dT%H:%M:%S").to_string();
