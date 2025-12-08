@@ -222,27 +222,7 @@ impl App {
             }
             (_, KeyCode::Enter) if self.active_field == 0 => match self.selected_type() {
                 Some("Todos") => {
-                    let file_name = self.file_name_input.value_and_reset();
-                    let todo_file_name: String;
-
-                    let now = Utc::now();
-                    let timestamp = now.format("%Y-%m-%dT%H:%M:%S").to_string();
-
-                    if file_name.is_empty() && self.selected_category() == Some("") {
-                        todo_file_name = format!("{}.md", timestamp);
-                    } else if file_name.is_empty() {
-                        todo_file_name =
-                            format!("{} - {}.md", timestamp, self.selected_category().unwrap());
-                    } else if self.selected_category() == Some("") {
-                        todo_file_name = format!("{} {}.md", file_name, timestamp);
-                    } else {
-                        todo_file_name = format!(
-                            "{} {} - {}.md",
-                            file_name,
-                            timestamp,
-                            self.selected_category().unwrap()
-                        );
-                    }
+                    let todo_file_name = self.generate_file_name();
 
                     let bufpath = PathBuf::from(format!(
                         "{}/{}",
@@ -271,6 +251,31 @@ impl App {
                 }
             }
         }
+    }
+
+    fn generate_file_name(&mut self) -> String {
+        let user_input = self.file_name_input.value_and_reset();
+        let file_name: String;
+
+        let now = Utc::now();
+        let timestamp = now.format("%Y-%m-%dT%H:%M:%S").to_string();
+
+        if user_input.is_empty() && self.selected_category() == Some("") {
+            file_name = format!("{}.md", timestamp);
+        } else if user_input.is_empty() {
+            file_name = format!("{} - {}.md", timestamp, self.selected_category().unwrap());
+        } else if self.selected_category() == Some("") {
+            file_name = format!("{} {}.md", user_input, timestamp);
+        } else {
+            file_name = format!(
+                "{} {} - {}.md",
+                user_input,
+                timestamp,
+                self.selected_category().unwrap()
+            );
+        }
+
+        file_name
     }
 
     /// Set running to false to quit the application.
