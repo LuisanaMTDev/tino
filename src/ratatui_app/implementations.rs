@@ -263,7 +263,7 @@ impl App {
                         "{}/{}",
                         self.config_file
                             .tino_dirs
-                            .ideas_dir
+                            .notes_dir
                             .into_path()
                             .unwrap()
                             .canonicalize()
