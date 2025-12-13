@@ -29,7 +29,6 @@ impl App {
             config_file,
             file_name_input: Input::default(),
             type_items: vec![
-                "".to_string(),
                 "Todos".to_string(),
                 "Ideas".to_string(),
                 "Notes".to_string(),
@@ -276,7 +275,6 @@ impl App {
                 }
                 // This should be like this because these aren't valid options for a file type,
                 // code can be added to handle this cases but not creation of files (for now).
-                Some("") => {}
                 None => {}
                 _ => {}
             },
