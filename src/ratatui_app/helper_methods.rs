@@ -188,10 +188,12 @@ impl Helpers for App {
             ));
         }
 
-        for tino_file_result in fs::read_dir(config_file.tino_dirs.notes_dir.as_str()).unwrap() {
+        for tino_file_result in
+            fs::read_dir(config_file.tino_dirs.academic_notes_dir.as_str()).unwrap()
+        {
             let tino_file = tino_file_result.unwrap();
             tino_files.push((
-                Self::format_tino_file(TinoFileTypes::Note, tino_file.file_name()),
+                Self::format_tino_file(TinoFileTypes::AcademicNote, tino_file.file_name()),
                 tino_file
                     .path()
                     .canonicalize()
@@ -209,6 +211,7 @@ impl Helpers for App {
             TinoFileTypes::Todo => format!("TODO | {}", tino_file_name.display()),
             TinoFileTypes::Idea => format!("IDEA | {}", tino_file_name.display()),
             TinoFileTypes::Note => format!("NOTE | {}", tino_file_name.display()),
+            TinoFileTypes::AcademicNote => format!("ACAD. NOTE | {}", tino_file_name.display()),
         }
     }
 }

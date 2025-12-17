@@ -38,6 +38,7 @@ impl App {
                 "Todos".to_string(),
                 "Ideas".to_string(),
                 "Notes".to_string(),
+                "Academic notes".to_string(),
             ],
             type_state,
             category_items: vec![
@@ -320,6 +321,26 @@ impl App {
                     File::create(bufpath).unwrap();
                     self.tino_files = Self::get_tino_files(self.config_file.clone());
                 }
+                Some("Academic notes") => {
+                    let academic_note_file_name = self.generate_file_name();
+
+                    let bufpath = PathBuf::from(format!(
+                        "{}/{}",
+                        self.config_file
+                            .tino_dirs
+                            .academic_notes_dir
+                            .into_path()
+                            .unwrap()
+                            .canonicalize()
+                            .unwrap()
+                            .display(),
+                        academic_note_file_name
+                    ));
+
+                    File::create(bufpath).unwrap();
+                    self.tino_files = Self::get_tino_files(self.config_file.clone());
+                }
+                //NOTE:
                 // This should be like this because these aren't valid options for a file type,
                 // code can be added to handle this cases but not creation of files (for now).
                 None => {}

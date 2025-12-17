@@ -9,6 +9,7 @@ pub struct TinoDirs {
     pub todos_dir: String,
     pub ideas_dir: String,
     pub notes_dir: String,
+    pub academic_notes_dir: String,
 }
 
 #[derive(Debug, Default, Clone, Deserialize)]

@@ -2,3 +2,4 @@
 todos_dir = "./src/tests"
 ideas_dir = "./src/tests"
 notes_dir = "./src/tests"
+academic_notes_dir = "./src/tests"
