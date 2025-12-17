@@ -266,6 +266,7 @@ impl App {
                     ));
 
                     File::create(bufpath).unwrap();
+                    self.tino_files = Self::get_tino_files(self.config_file.clone());
                 }
                 Some("Ideas") => {
                     let idea_file_name = self.generate_file_name();
@@ -284,6 +285,7 @@ impl App {
                     ));
 
                     File::create(bufpath).unwrap();
+                    self.tino_files = Self::get_tino_files(self.config_file.clone());
                 }
                 Some("Notes") => {
                     let note_file_name = self.generate_file_name();
@@ -302,6 +304,7 @@ impl App {
                     ));
 
                     File::create(bufpath).unwrap();
+                    self.tino_files = Self::get_tino_files(self.config_file.clone());
                 }
                 // This should be like this because these aren't valid options for a file type,
                 // code can be added to handle this cases but not creation of files (for now).
