@@ -21,7 +21,7 @@ pub trait Helpers {
 
 impl Helpers for App {
     fn generate_file_name(&mut self) -> String {
-        let user_input = self.file_name_input.value_and_reset();
+        let user_input = self.file_name_input.value_and_reset().trim().to_string();
         let file_name: String;
 
         let now = Utc::now();
