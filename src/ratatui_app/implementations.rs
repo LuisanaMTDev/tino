@@ -1,5 +1,7 @@
+use std::env;
 use std::fs::File;
 use std::path::PathBuf;
+use std::process::Command;
 
 use crate::app::config_file::ConfigFile;
 use crate::ratatui_app::{app_and_rust_traits_impls::App, helper_methods::Helpers};
@@ -29,7 +31,7 @@ impl App {
         Self {
             running: false,
             active_field: 0,
-            config_file,
+            open_editor: false,
             config_file: config_file.clone(),
             file_name_input: Input::default(),
             type_items: vec![
@@ -57,6 +59,14 @@ impl App {
         while self.running {
             terminal.draw(|frame| self.render(frame))?;
             self.handle_crossterm_events()?;
+        }
+        if self.open_editor {
+            let editor = env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
+
+            Command::new(editor)
+                .arg(self.selected_tino_file().unwrap())
+                .status()
+                .expect("ERROR: while openning editor.");
         }
         Ok(())
     }
@@ -247,6 +257,10 @@ impl App {
                     3 => self.tino_file_previous(),
                     _ => {}
                 }
+            }
+            (_, KeyCode::Enter) if self.active_field == 3 => {
+                self.open_editor = true;
+                self.running = false;
             }
             (_, KeyCode::Enter) if self.active_field == 0 => match self.selected_type() {
                 Some("Todos") => {

@@ -8,6 +8,7 @@ pub struct App {
     /// Is the application running?
     pub running: bool,
     pub active_field: usize,
+    pub open_editor: bool,
     pub config_file: ConfigFile,
     pub file_name_input: Input,
     pub type_items: Vec<String>,
