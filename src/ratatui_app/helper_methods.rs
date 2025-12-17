@@ -11,10 +11,13 @@ pub trait Helpers {
     fn quit(&mut self);
     fn selected_type(&self) -> Option<&str>;
     fn selected_category(&self) -> Option<&str>;
+    fn selected_tino_file(&self) -> Option<&str>;
     fn type_next(&mut self);
     fn type_previous(&mut self);
     fn category_next(&mut self);
     fn category_previous(&mut self);
+    fn tino_file_next(&mut self);
+    fn tino_file_previous(&mut self);
     fn get_tino_files(config_file: ConfigFile) -> Vec<(String, String)>;
     fn format_tino_file(tino_file_type: TinoFileTypes, tino_file_name: OsString) -> String;
 }
@@ -60,6 +63,12 @@ impl Helpers for App {
         self.category_state
             .selected()
             .map(|i| self.category_items[i].as_str())
+    }
+
+    fn selected_tino_file(&self) -> Option<&str> {
+        self.tino_files_state
+            .selected()
+            .map(|i| self.tino_files[i].1.as_str())
     }
 
     fn type_next(&mut self) {
@@ -117,6 +126,35 @@ impl Helpers for App {
         };
         self.category_state.select(Some(i));
     }
+
+    fn tino_file_next(&mut self) {
+        let i = match self.tino_files_state.selected() {
+            Some(i) => {
+                if i >= self.tino_files.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
+        self.tino_files_state.select(Some(i));
+    }
+
+    fn tino_file_previous(&mut self) {
+        let i = match self.tino_files_state.selected() {
+            Some(i) => {
+                if i == 0 {
+                    self.tino_files.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
+        self.tino_files_state.select(Some(i));
+    }
+
     fn get_tino_files(config_file: ConfigFile) -> Vec<(String, String)> {
         let mut tino_files = vec![];
 

@@ -226,23 +226,25 @@ impl App {
             (_, KeyCode::Esc)
             | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
             (_, KeyCode::Tab) => {
-                self.active_field = (self.active_field + 1) % 3;
+                self.active_field = (self.active_field + 1) % 4;
             }
             (_, KeyCode::Down | KeyCode::Char('j'))
-                if self.active_field == 1 || self.active_field == 2 =>
+                if self.active_field == 1 || self.active_field == 2 || self.active_field == 3 =>
             {
                 match self.active_field {
                     1 => self.type_next(),
                     2 => self.category_next(),
+                    3 => self.tino_file_next(),
                     _ => {}
                 }
             }
             (_, KeyCode::Up | KeyCode::Char('k'))
-                if self.active_field == 1 || self.active_field == 2 =>
+                if self.active_field == 1 || self.active_field == 2 || self.active_field == 3 =>
             {
                 match self.active_field {
                     1 => self.type_previous(),
                     2 => self.category_previous(),
+                    3 => self.tino_file_previous(),
                     _ => {}
                 }
             }
