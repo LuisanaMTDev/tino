@@ -7,6 +7,7 @@ use crate::app::config_file::ConfigFile;
 use crate::ratatui_app::{app_and_rust_traits_impls::App, helper_methods::Helpers};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::prelude::{Constraint, Direction, Layout};
+use ratatui::text::Text;
 use ratatui::{
     DefaultTerminal, Frame,
     style::{Color, Style},
@@ -51,6 +52,7 @@ impl App {
             category_state,
             tino_files: Self::get_tino_files(config_file.clone()),
             tino_files_state,
+            file_to_preview: String::from("File preview"),
         }
     }
 
@@ -199,7 +201,8 @@ impl App {
         );
 
         frame.render_widget(
-            Paragraph::new("File preview").block(Block::new().borders(Borders::ALL)),
+            Paragraph::new(Text::from(self.file_to_preview.clone()))
+                .block(Block::new().borders(Borders::ALL)),
             files_list_and_preview_layout[2],
         );
 
@@ -346,6 +349,9 @@ impl App {
                 None => {}
                 _ => {}
             },
+            (_, KeyCode::Char('v')) if self.active_field == 3 => {
+                self.file_to_preview = self.get_file_content()
+            }
             _ => {
                 if self.active_field == 0 && key.code != KeyCode::Enter {
                     self.file_name_input.handle_event(&Event::Key(key));

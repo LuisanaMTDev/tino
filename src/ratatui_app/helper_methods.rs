@@ -20,6 +20,7 @@ pub trait Helpers {
     fn tino_file_previous(&mut self);
     fn get_tino_files(config_file: ConfigFile) -> Vec<(String, String)>;
     fn format_tino_file(tino_file_type: TinoFileTypes, tino_file_name: OsString) -> String;
+    fn get_file_content(&self) -> String;
 }
 
 impl Helpers for App {
@@ -244,5 +245,8 @@ impl Helpers for App {
             TinoFileTypes::Note => format!("NOTE | {}", tino_file_name.display()),
             TinoFileTypes::AcademicNote => format!("ACAD. NOTE | {}", tino_file_name.display()),
         }
+    }
+    fn get_file_content(&self) -> String {
+        fs::read_to_string(self.selected_tino_file().unwrap()).unwrap()
     }
 }
