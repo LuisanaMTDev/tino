@@ -5,6 +5,9 @@ TINO (Todo-Ideas-Notes-Organizer), A terminal application (TUI) to organize todo
 > [!IMPORTANT]
 > This software was just test in Ubuntu as OS, and Wezterm as Terminal Emulator.
 
+> [!WARNING]
+> THIS IS NOT READY FOR USAGE.
+
 ## License
 
 Copyright (c) LuisanaMTDev <luisanamartineztorres25@gmail.com>
