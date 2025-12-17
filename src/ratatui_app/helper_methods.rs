@@ -158,50 +158,81 @@ impl Helpers for App {
     fn get_tino_files(config_file: ConfigFile) -> Vec<(String, String)> {
         let mut tino_files = vec![];
 
-        // let tino_todo_files = fs::read_dir(config_file.tino_dirs.todos_dir.as_str())
-        //     .unwrap()
-        //     .map(|_| {});
+        let mut tino_todo_files: Vec<(String, String)> =
+            fs::read_dir(config_file.tino_dirs.todos_dir.as_str())
+                .unwrap()
+                .map(|tino_file| {
+                    let tino_file = tino_file.unwrap();
+                    (
+                        Self::format_tino_file(TinoFileTypes::Todo, tino_file.file_name()),
+                        tino_file
+                            .path()
+                            .canonicalize()
+                            .unwrap()
+                            .display()
+                            .to_string(),
+                    )
+                })
+                .collect();
 
-        for tino_file_result in fs::read_dir(config_file.tino_dirs.todos_dir.as_str()).unwrap() {
-            let tino_file = tino_file_result.unwrap();
-            tino_files.push((
-                Self::format_tino_file(TinoFileTypes::Todo, tino_file.file_name()),
-                tino_file
-                    .path()
-                    .canonicalize()
-                    .unwrap()
-                    .display()
-                    .to_string(),
-            ));
-        }
+        tino_files.append(&mut tino_todo_files);
 
-        for tino_file_result in fs::read_dir(config_file.tino_dirs.ideas_dir.as_str()).unwrap() {
-            let tino_file = tino_file_result.unwrap();
-            tino_files.push((
-                Self::format_tino_file(TinoFileTypes::Idea, tino_file.file_name()),
-                tino_file
-                    .path()
-                    .canonicalize()
-                    .unwrap()
-                    .display()
-                    .to_string(),
-            ));
-        }
+        let mut tino_ideas_files: Vec<(String, String)> =
+            fs::read_dir(config_file.tino_dirs.ideas_dir.as_str())
+                .unwrap()
+                .map(|tino_file| {
+                    let tino_file = tino_file.unwrap();
+                    (
+                        Self::format_tino_file(TinoFileTypes::Idea, tino_file.file_name()),
+                        tino_file
+                            .path()
+                            .canonicalize()
+                            .unwrap()
+                            .display()
+                            .to_string(),
+                    )
+                })
+                .collect();
 
-        for tino_file_result in
-            fs::read_dir(config_file.tino_dirs.academic_notes_dir.as_str()).unwrap()
-        {
-            let tino_file = tino_file_result.unwrap();
-            tino_files.push((
-                Self::format_tino_file(TinoFileTypes::AcademicNote, tino_file.file_name()),
-                tino_file
-                    .path()
-                    .canonicalize()
-                    .unwrap()
-                    .display()
-                    .to_string(),
-            ));
-        }
+        tino_files.append(&mut tino_ideas_files);
+
+        let mut tino_notes_files: Vec<(String, String)> =
+            fs::read_dir(config_file.tino_dirs.notes_dir.as_str())
+                .unwrap()
+                .map(|tino_file| {
+                    let tino_file = tino_file.unwrap();
+                    (
+                        Self::format_tino_file(TinoFileTypes::Note, tino_file.file_name()),
+                        tino_file
+                            .path()
+                            .canonicalize()
+                            .unwrap()
+                            .display()
+                            .to_string(),
+                    )
+                })
+                .collect();
+
+        tino_files.append(&mut tino_notes_files);
+
+        let mut tino_academic_notes_files: Vec<(String, String)> =
+            fs::read_dir(config_file.tino_dirs.academic_notes_dir.as_str())
+                .unwrap()
+                .map(|tino_file| {
+                    let tino_file = tino_file.unwrap();
+                    (
+                        Self::format_tino_file(TinoFileTypes::AcademicNote, tino_file.file_name()),
+                        tino_file
+                            .path()
+                            .canonicalize()
+                            .unwrap()
+                            .display()
+                            .to_string(),
+                    )
+                })
+                .collect();
+
+        tino_files.append(&mut tino_academic_notes_files);
 
         tino_files
     }
