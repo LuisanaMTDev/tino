@@ -14,4 +14,6 @@ pub struct App {
     pub type_state: ListState,
     pub category_items: Vec<String>,
     pub category_state: ListState,
+    pub tino_files: Vec<(String, String)>,
+    pub tino_files_state: ListState,
 }

@@ -1,4 +1,9 @@
-use crate::ratatui_app::app_and_rust_traits_impls::App;
+use std::{ffi::OsString, fs};
+
+use crate::{
+    app::config_file::ConfigFile,
+    ratatui_app::{app_and_rust_traits_impls::App, types::TinoFileTypes},
+};
 use chrono::Utc;
 
 pub trait Helpers {
@@ -10,6 +15,8 @@ pub trait Helpers {
     fn type_previous(&mut self);
     fn category_next(&mut self);
     fn category_previous(&mut self);
+    fn get_tino_files(config_file: ConfigFile) -> Vec<(String, String)>;
+    fn format_tino_file(tino_file_type: TinoFileTypes, tino_file_name: OsString) -> String;
 }
 
 impl Helpers for App {
@@ -109,5 +116,61 @@ impl Helpers for App {
             None => 0,
         };
         self.category_state.select(Some(i));
+    }
+    fn get_tino_files(config_file: ConfigFile) -> Vec<(String, String)> {
+        let mut tino_files = vec![];
+
+        // let tino_todo_files = fs::read_dir(config_file.tino_dirs.todos_dir.as_str())
+        //     .unwrap()
+        //     .map(|_| {});
+
+        for tino_file_result in fs::read_dir(config_file.tino_dirs.todos_dir.as_str()).unwrap() {
+            let tino_file = tino_file_result.unwrap();
+            tino_files.push((
+                Self::format_tino_file(TinoFileTypes::Todo, tino_file.file_name()),
+                tino_file
+                    .path()
+                    .canonicalize()
+                    .unwrap()
+                    .display()
+                    .to_string(),
+            ));
+        }
+
+        for tino_file_result in fs::read_dir(config_file.tino_dirs.ideas_dir.as_str()).unwrap() {
+            let tino_file = tino_file_result.unwrap();
+            tino_files.push((
+                Self::format_tino_file(TinoFileTypes::Idea, tino_file.file_name()),
+                tino_file
+                    .path()
+                    .canonicalize()
+                    .unwrap()
+                    .display()
+                    .to_string(),
+            ));
+        }
+
+        for tino_file_result in fs::read_dir(config_file.tino_dirs.notes_dir.as_str()).unwrap() {
+            let tino_file = tino_file_result.unwrap();
+            tino_files.push((
+                Self::format_tino_file(TinoFileTypes::Note, tino_file.file_name()),
+                tino_file
+                    .path()
+                    .canonicalize()
+                    .unwrap()
+                    .display()
+                    .to_string(),
+            ));
+        }
+
+        tino_files
+    }
+
+    fn format_tino_file(tino_file_type: TinoFileTypes, tino_file_name: OsString) -> String {
+        match tino_file_type {
+            TinoFileTypes::Todo => format!("TODO | {}", tino_file_name.display()),
+            TinoFileTypes::Idea => format!("IDEA | {}", tino_file_name.display()),
+            TinoFileTypes::Note => format!("NOTE | {}", tino_file_name.display()),
+        }
     }
 }

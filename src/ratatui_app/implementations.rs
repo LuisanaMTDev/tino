@@ -23,10 +23,14 @@ impl App {
         let mut category_state = ListState::default();
         category_state.select(Some(0));
 
+        let mut tino_files_state = ListState::default();
+        tino_files_state.select(Some(0));
+
         Self {
             running: false,
             active_field: 0,
             config_file,
+            config_file: config_file.clone(),
             file_name_input: Input::default(),
             type_items: vec![
                 "Todos".to_string(),
@@ -42,6 +46,8 @@ impl App {
                 "Archive".to_string(),
             ],
             category_state,
+            tino_files: Self::get_tino_files(config_file.clone()),
+            tino_files_state,
         }
     }
 
@@ -89,8 +95,8 @@ impl App {
             Direction::Horizontal,
             [
                 Constraint::Percentage(10),
-                Constraint::Percentage(40),
-                Constraint::Percentage(40),
+                Constraint::Percentage(50),
+                Constraint::Percentage(30),
                 Constraint::Percentage(10),
             ],
         )
@@ -155,10 +161,32 @@ impl App {
             .highlight_style(Style::default().fg(Color::Green));
         frame.render_stateful_widget(category_list, form_layout[3], &mut self.category_state);
 
-        frame.render_widget(
-            Paragraph::new("List of files").block(Block::new().borders(Borders::ALL)),
+        // TINO files List
+        let tino_files_style = if self.active_field == 3 {
+            Style::default().fg(Color::Yellow)
+        } else {
+            Style::default()
+        };
+        let tino_files_items: Vec<ListItem> = self
+            .tino_files
+            .iter()
+            .map(|i| ListItem::new(i.0.as_str()))
+            .collect();
+        let tino_files_list = List::new(tino_files_items)
+            .block(
+                Block::new()
+                    .borders(Borders::ALL)
+                    .title("TINO files")
+                    .style(tino_files_style),
+            )
+            .highlight_symbol(">> ")
+            .highlight_style(Style::default().fg(Color::Green));
+        frame.render_stateful_widget(
+            tino_files_list,
             files_list_and_preview_layout[1],
+            &mut self.tino_files_state,
         );
+
         frame.render_widget(
             Paragraph::new("File preview").block(Block::new().borders(Borders::ALL)),
             files_list_and_preview_layout[2],

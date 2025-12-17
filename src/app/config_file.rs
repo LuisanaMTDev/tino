@@ -4,14 +4,14 @@ use serde::Deserialize;
 
 use crate::app::utils::TinoError;
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct TinoDirs {
     pub todos_dir: String,
     pub ideas_dir: String,
     pub notes_dir: String,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 pub struct ConfigFile {
     pub tino_dirs: TinoDirs,
 }
