@@ -7,6 +7,7 @@ use crate::app::config_file::ConfigFile;
 use crate::ratatui_app::{app_and_rust_traits_impls::App, helper_methods::Helpers};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::prelude::{Constraint, Direction, Layout};
+use ratatui::style::Stylize;
 use ratatui::text::Text;
 use ratatui::{
     DefaultTerminal, Frame,
@@ -116,12 +117,12 @@ impl App {
         .split(main_layout[2]);
 
         let file_name_style = if self.active_field == 0 {
-            Style::default().fg(Color::Yellow)
+            Style::default().fg(Color::Magenta)
         } else {
             Style::default()
         };
         frame.render_widget(
-            Paragraph::new(self.file_name_input.value()).block(
+            Paragraph::new(self.file_name_input.value().white()).block(
                 Block::new()
                     .borders(Borders::ALL)
                     .title("File name")
@@ -132,7 +133,7 @@ impl App {
 
         // Type List
         let type_style = if self.active_field == 1 {
-            Style::default().fg(Color::Yellow)
+            Style::default().fg(Color::Magenta)
         } else {
             Style::default()
         };
@@ -149,12 +150,12 @@ impl App {
                     .style(type_style),
             )
             .highlight_symbol(">> ")
-            .highlight_style(Style::default().fg(Color::Green));
+            .highlight_style(Style::default().fg(Color::Cyan));
         frame.render_stateful_widget(type_list, form_layout[2], &mut self.type_state);
 
         // Category List
         let category_style = if self.active_field == 2 {
-            Style::default().fg(Color::Yellow)
+            Style::default().fg(Color::Magenta)
         } else {
             Style::default()
         };
@@ -171,19 +172,19 @@ impl App {
                     .style(category_style),
             )
             .highlight_symbol(">> ")
-            .highlight_style(Style::default().fg(Color::Green));
+            .highlight_style(Style::default().fg(Color::Cyan));
         frame.render_stateful_widget(category_list, form_layout[3], &mut self.category_state);
 
         // TINO files List
         let tino_files_style = if self.active_field == 3 {
-            Style::default().fg(Color::Yellow)
+            Style::default().fg(Color::Magenta)
         } else {
             Style::default()
         };
         let tino_files_items: Vec<ListItem> = self
             .tino_files
             .iter()
-            .map(|i| ListItem::new(i.0.as_str()))
+            .map(|i| ListItem::new(i.0.as_str()).white())
             .collect();
         let tino_files_list = List::new(tino_files_items)
             .block(
@@ -193,7 +194,7 @@ impl App {
                     .style(tino_files_style),
             )
             .highlight_symbol(">> ")
-            .highlight_style(Style::default().fg(Color::Green));
+            .highlight_style(Style::default().fg(Color::Cyan));
         frame.render_stateful_widget(
             tino_files_list,
             files_list_and_preview_layout[1],
@@ -201,7 +202,7 @@ impl App {
         );
 
         frame.render_widget(
-            Paragraph::new(Text::from(self.file_to_preview.clone()))
+            Paragraph::new(Text::from(self.file_to_preview.clone()).bold())
                 .block(Block::new().borders(Borders::ALL)),
             files_list_and_preview_layout[2],
         );
