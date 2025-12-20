@@ -1,26 +1,25 @@
 use std::env;
-use std::fs::File;
-use std::path::PathBuf;
 use std::process::Command;
 
 use crate::app::config_file::ConfigFile;
-use crate::ratatui_app::{app_and_rust_traits_impls::App, helper_methods::Helpers};
+use crate::app::utils::TinoError;
+use crate::ratatui_app::{helper_methods::Helpers, types::App};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::prelude::{Constraint, Direction, Layout};
 use ratatui::style::Stylize;
 use ratatui::text::Text;
+use ratatui::widgets::Wrap;
 use ratatui::{
     DefaultTerminal, Frame,
     style::{Color, Style},
     widgets::{Block, Borders, List, ListItem, ListState, Paragraph},
 };
-use softpath::prelude::*;
 use tui_input::Input;
 use tui_input::backend::crossterm::EventHandler;
 
 impl App {
     /// Construct a new instance of [`App`].
-    pub fn new(config_file: ConfigFile) -> Self {
+    pub fn new(config_file: ConfigFile) -> anyhow::Result<Self> {
         let mut type_state = ListState::default();
         type_state.select(Some(0));
 
@@ -30,11 +29,12 @@ impl App {
         let mut tino_files_state = ListState::default();
         tino_files_state.select(Some(0));
 
-        Self {
+        Ok(Self {
             running: false,
             active_field: 0,
             open_editor: false,
             config_file: config_file.clone(),
+            scroll_position: (0, 0),
             file_name_input: Input::default(),
             type_items: vec![
                 "Todos".to_string(),
@@ -51,14 +51,14 @@ impl App {
                 "Archive".to_string(),
             ],
             category_state,
-            tino_files: Self::get_tino_files(config_file.clone()),
+            tino_files: Self::get_tino_files(config_file.clone())?,
             tino_files_state,
             file_to_preview: String::from("File preview"),
-        }
+        })
     }
 
     /// Run the application's main loop.
-    pub fn run(mut self, mut terminal: DefaultTerminal) -> color_eyre::Result<()> {
+    pub fn run(mut self, mut terminal: DefaultTerminal) -> anyhow::Result<()> {
         self.running = true;
         while self.running {
             terminal.draw(|frame| self.render(frame))?;
@@ -68,7 +68,10 @@ impl App {
             let editor = env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
 
             Command::new(editor)
-                .arg(self.selected_tino_file().unwrap())
+                .arg(match self.selected_tino_file() {
+                    Some(tino_file) => String::from(tino_file),
+                    None => return Err(TinoError::NotSelectedTinoFile.into()),
+                })
                 .status()
                 .expect("ERROR: while openning editor.");
         }
@@ -201,9 +204,17 @@ impl App {
             &mut self.tino_files_state,
         );
 
+        let file_preview_style = if self.active_field == 4 {
+            Style::default().fg(Color::Magenta)
+        } else {
+            Style::default()
+        };
         frame.render_widget(
-            Paragraph::new(Text::from(self.file_to_preview.clone()).bold())
-                .block(Block::new().borders(Borders::ALL)),
+            Paragraph::new(Text::from(self.file_to_preview.clone()).bold().white())
+                .block(Block::new().borders(Borders::ALL))
+                .style(file_preview_style)
+                .wrap(Wrap { trim: true })
+                .scroll((self.scroll_position.0, 0)),
             files_list_and_preview_layout[2],
         );
 
@@ -224,139 +235,112 @@ impl App {
     ///
     /// If your application needs to perform work in between handling events, you can use the
     /// [`event::poll`] function to check if there are any events available with a timeout.
-    fn handle_crossterm_events(&mut self) -> color_eyre::Result<()> {
+    fn handle_crossterm_events(&mut self) -> anyhow::Result<()> {
         match event::read()? {
             // it's important to check KeyEventKind::Press to avoid handling key release events
             Event::Key(key) if key.kind == KeyEventKind::Press => self.on_key_event(key),
-            Event::Mouse(_) => {}
-            Event::Resize(_, _) => {}
-            _ => {}
+            Event::Mouse(_) => Ok(()),
+            Event::Resize(_, _) => Ok(()),
+            _ => Ok(()),
         }
-        Ok(())
     }
 
     /// Handles the key events and updates the state of [`App`].
-    fn on_key_event(&mut self, key: KeyEvent) {
+    fn on_key_event(&mut self, key: KeyEvent) -> anyhow::Result<()> {
         match (key.modifiers, key.code) {
             (_, KeyCode::Esc)
-            | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => self.quit(),
+            | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => {
+                self.quit();
+                Ok(())
+            }
             (_, KeyCode::Tab) => {
-                self.active_field = (self.active_field + 1) % 4;
+                self.active_field = (self.active_field + 1) % 5;
+                Ok(())
             }
             (_, KeyCode::Down | KeyCode::Char('j'))
                 if self.active_field == 1 || self.active_field == 2 || self.active_field == 3 =>
             {
                 match self.active_field {
-                    1 => self.type_next(),
-                    2 => self.category_next(),
-                    3 => self.tino_file_next(),
-                    _ => {}
+                    1 => {
+                        self.type_next();
+                        Ok(())
+                    }
+                    2 => {
+                        self.category_next();
+                        Ok(())
+                    }
+                    3 => {
+                        self.tino_file_next();
+                        Ok(())
+                    }
+                    _ => Ok(()),
                 }
             }
             (_, KeyCode::Up | KeyCode::Char('k'))
                 if self.active_field == 1 || self.active_field == 2 || self.active_field == 3 =>
             {
                 match self.active_field {
-                    1 => self.type_previous(),
-                    2 => self.category_previous(),
-                    3 => self.tino_file_previous(),
-                    _ => {}
+                    1 => {
+                        self.type_previous();
+                        Ok(())
+                    }
+                    2 => {
+                        self.category_previous();
+                        Ok(())
+                    }
+                    3 => {
+                        self.tino_file_previous();
+                        Ok(())
+                    }
+                    _ => Ok(()),
                 }
+            }
+            (_, KeyCode::Down | KeyCode::Char('j')) if self.active_field == 4 => {
+                self.scroll_position.0 = self.scroll_position.0.saturating_add(1);
+                Ok(())
+            }
+            (_, KeyCode::Up | KeyCode::Char('k')) if self.active_field == 4 => {
+                self.scroll_position.0 = self.scroll_position.0.saturating_sub(1);
+                Ok(())
             }
             (_, KeyCode::Enter) if self.active_field == 3 => {
                 self.open_editor = true;
                 self.running = false;
+                Ok(())
             }
             (_, KeyCode::Enter) if self.active_field == 0 => match self.selected_type() {
                 Some("Todos") => {
-                    let todo_file_name = self.generate_file_name();
-
-                    let bufpath = PathBuf::from(format!(
-                        "{}/{}",
-                        self.config_file
-                            .tino_dirs
-                            .todos_dir
-                            .into_path()
-                            .unwrap()
-                            .canonicalize()
-                            .unwrap()
-                            .display(),
-                        todo_file_name
-                    ));
-
-                    File::create(bufpath).unwrap();
-                    self.tino_files = Self::get_tino_files(self.config_file.clone());
+                    self.create_tino_file(self.config_file.tino_dirs.todos_dir.clone().as_str())
                 }
                 Some("Ideas") => {
-                    let idea_file_name = self.generate_file_name();
-
-                    let bufpath = PathBuf::from(format!(
-                        "{}/{}",
-                        self.config_file
-                            .tino_dirs
-                            .ideas_dir
-                            .into_path()
-                            .unwrap()
-                            .canonicalize()
-                            .unwrap()
-                            .display(),
-                        idea_file_name
-                    ));
-
-                    File::create(bufpath).unwrap();
-                    self.tino_files = Self::get_tino_files(self.config_file.clone());
+                    self.create_tino_file(self.config_file.tino_dirs.ideas_dir.clone().as_str())
                 }
                 Some("Notes") => {
-                    let note_file_name = self.generate_file_name();
-
-                    let bufpath = PathBuf::from(format!(
-                        "{}/{}",
-                        self.config_file
-                            .tino_dirs
-                            .notes_dir
-                            .into_path()
-                            .unwrap()
-                            .canonicalize()
-                            .unwrap()
-                            .display(),
-                        note_file_name
-                    ));
-
-                    File::create(bufpath).unwrap();
-                    self.tino_files = Self::get_tino_files(self.config_file.clone());
+                    self.create_tino_file(self.config_file.tino_dirs.notes_dir.clone().as_str())
                 }
-                Some("Academic notes") => {
-                    let academic_note_file_name = self.generate_file_name();
-
-                    let bufpath = PathBuf::from(format!(
-                        "{}/{}",
-                        self.config_file
-                            .tino_dirs
-                            .academic_notes_dir
-                            .into_path()
-                            .unwrap()
-                            .canonicalize()
-                            .unwrap()
-                            .display(),
-                        academic_note_file_name
-                    ));
-
-                    File::create(bufpath).unwrap();
-                    self.tino_files = Self::get_tino_files(self.config_file.clone());
-                }
+                Some("Academic notes") => self.create_tino_file(
+                    self.config_file
+                        .tino_dirs
+                        .academic_notes_dir
+                        .clone()
+                        .as_str(),
+                ),
                 //NOTE:
                 // This should be like this because these aren't valid options for a file type,
                 // code can be added to handle this cases but not creation of files (for now).
-                None => {}
-                _ => {}
+                None => Ok(()),
+                _ => Ok(()),
             },
             (_, KeyCode::Char('v')) if self.active_field == 3 => {
-                self.file_to_preview = self.get_file_content()
+                self.file_to_preview = self.get_file_content()?;
+                self.scroll_position = (0, 0);
+                Ok(())
             }
             _ => {
                 if self.active_field == 0 && key.code != KeyCode::Enter {
                     self.file_name_input.handle_event(&Event::Key(key));
                 }
+                Ok(())
             }
         }
     }

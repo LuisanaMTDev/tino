@@ -1,5 +1,6 @@
 use std::{fs, path::PathBuf};
 
+use color_eyre::owo_colors::OwoColorize;
 use serde::Deserialize;
 
 use crate::app::utils::TinoError;
@@ -18,9 +19,19 @@ pub struct ConfigFile {
 }
 
 impl ConfigFile {
+    /// Pass `true` for testing.
     pub fn new(test: bool) -> Result<Self, TinoError> {
         let config_file_path: String;
-        let test_config_dir = format!("{}/dev/tino/src/tests", dirs::home_dir().unwrap().display());
+
+        let mut test_config_dir = String::default();
+        match dirs::home_dir() {
+            Some(home_dir) => {
+                test_config_dir = format!("{}/dev/tino/src/tests", home_dir.display());
+            }
+            None => {
+                return Err(TinoError::HomeDirNotFound);
+            }
+        }
 
         if test {
             match Self::get_config_file_path(Some(PathBuf::from(test_config_dir))) {
@@ -41,7 +52,15 @@ impl ConfigFile {
                 Err(error) => Err(TinoError::DeserializeConfigFileContentFailed(error)),
                 Ok(parsered_config_file) => Ok(parsered_config_file),
             },
-            Err(error) => Err(TinoError::ReadConfigFileFailed(error)),
+            Err(error) => {
+                eprintln!(
+                    "{}",
+                    "You need to create a .tino.toml file in you config directory."
+                        .red()
+                        .bold()
+                );
+                Err(TinoError::ReadConfigFileFailed(error))
+            }
         }
     }
 
