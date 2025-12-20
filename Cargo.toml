@@ -10,6 +10,10 @@ keywords = ["tui", "organization"]
 categories = ["command-line-utilities"]
 repository = "https://github.com/LuisanaMTDev/tino.git"
 
+[[bin]]
+name = "tino"
+path = "src/main.rs"
+
 [dependencies]
 crossterm = "0.28.1"
 ratatui = "0.29.0"
