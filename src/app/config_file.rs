@@ -22,7 +22,7 @@ impl ConfigFile {
     /// Pass `true` for testing.
     pub fn new(test: bool) -> Result<Self, TinoError> {
         let config_file_path: String;
-
+        #[allow(unused_assignments)]
         let mut test_config_dir = String::default();
         match dirs::home_dir() {
             Some(home_dir) => {
