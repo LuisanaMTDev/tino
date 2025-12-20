@@ -1,10 +1,14 @@
 [package]
 name = "tino"
 version = "0.1.0"
+edition = "2024"
 description = "TINO (Todo-Ideas-Notes-Organizer), A terminal application (TUI) to organize todos, ideas and notes written in markdown."
 authors = ["LuisanaMTDev <luisanamartineztorres25@gmail.com>"]
 license = "MIT"
-edition = "2024"
+readme = "README.md"
+keywords = ["tui", "organization"]
+categories = ["command-line-utilities"]
+repository = "https://github.com/LuisanaMTDev/tino.git"
 
 [dependencies]
 crossterm = "0.28.1"
