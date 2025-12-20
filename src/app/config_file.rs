@@ -19,6 +19,7 @@ pub struct ConfigFile {
 }
 
 impl ConfigFile {
+    /// Pass `true` for testing.
     pub fn new(test: bool) -> Result<Self, TinoError> {
         let config_file_path: String;
 
