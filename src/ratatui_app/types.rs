@@ -17,6 +17,7 @@ pub struct App {
     pub active_field: usize,
     pub open_editor: bool,
     pub config_file: ConfigFile,
+    pub scroll_position: (u16, u16),
     pub file_name_input: Input,
     pub type_items: Vec<String>,
     pub type_state: ListState,

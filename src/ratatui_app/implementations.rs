@@ -8,6 +8,7 @@ use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifier
 use ratatui::prelude::{Constraint, Direction, Layout};
 use ratatui::style::Stylize;
 use ratatui::text::Text;
+use ratatui::widgets::Wrap;
 use ratatui::{
     DefaultTerminal, Frame,
     style::{Color, Style},
@@ -33,6 +34,7 @@ impl App {
             active_field: 0,
             open_editor: false,
             config_file: config_file.clone(),
+            scroll_position: (0, 0),
             file_name_input: Input::default(),
             type_items: vec![
                 "Todos".to_string(),
@@ -202,9 +204,17 @@ impl App {
             &mut self.tino_files_state,
         );
 
+        let file_preview_style = if self.active_field == 4 {
+            Style::default().fg(Color::Magenta)
+        } else {
+            Style::default()
+        };
         frame.render_widget(
-            Paragraph::new(Text::from(self.file_to_preview.clone()).bold())
-                .block(Block::new().borders(Borders::ALL)),
+            Paragraph::new(Text::from(self.file_to_preview.clone()).bold().white())
+                .block(Block::new().borders(Borders::ALL))
+                .style(file_preview_style)
+                .wrap(Wrap { trim: true })
+                .scroll((self.scroll_position.0, 0)),
             files_list_and_preview_layout[2],
         );
 
@@ -244,7 +254,7 @@ impl App {
                 Ok(())
             }
             (_, KeyCode::Tab) => {
-                self.active_field = (self.active_field + 1) % 4;
+                self.active_field = (self.active_field + 1) % 5;
                 Ok(())
             }
             (_, KeyCode::Down | KeyCode::Char('j'))
@@ -285,6 +295,14 @@ impl App {
                     _ => Ok(()),
                 }
             }
+            (_, KeyCode::Down | KeyCode::Char('j')) if self.active_field == 4 => {
+                self.scroll_position.0 = self.scroll_position.0.saturating_add(1);
+                Ok(())
+            }
+            (_, KeyCode::Up | KeyCode::Char('k')) if self.active_field == 4 => {
+                self.scroll_position.0 = self.scroll_position.0.saturating_sub(1);
+                Ok(())
+            }
             (_, KeyCode::Enter) if self.active_field == 3 => {
                 self.open_editor = true;
                 self.running = false;
@@ -315,9 +333,7 @@ impl App {
             },
             (_, KeyCode::Char('v')) if self.active_field == 3 => {
                 self.file_to_preview = self.get_file_content()?;
-                    Ok(file_content) => file_content,
-                    Err(error) => return Err(error.into()),
-                };
+                self.scroll_position = (0, 0);
                 Ok(())
             }
             _ => {
