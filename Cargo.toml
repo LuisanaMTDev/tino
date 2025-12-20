@@ -1,6 +1,6 @@
 [package]
 name = "tino"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 description = "TINO (Todo-Ideas-Notes-Organizer), A terminal application (TUI) to organize todos, ideas and notes written in markdown."
 authors = ["LuisanaMTDev <luisanamartineztorres25@gmail.com>"]
