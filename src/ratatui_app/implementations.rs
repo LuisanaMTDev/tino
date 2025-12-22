@@ -5,9 +5,10 @@ use crate::app::config_file::ConfigFile;
 use crate::app::utils::TinoError;
 use crate::ratatui_app::{helper_methods::Helpers, types::App};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
+use ratatui::layout::Alignment;
 use ratatui::prelude::{Constraint, Direction, Layout};
 use ratatui::style::Stylize;
-use ratatui::text::Text;
+use ratatui::text::{Line, Text};
 use ratatui::widgets::Wrap;
 use ratatui::{
     DefaultTerminal, Frame,
@@ -129,7 +130,8 @@ impl App {
                 Block::new()
                     .borders(Borders::ALL)
                     .title("File name")
-                    .style(file_name_style),
+                    .style(file_name_style)
+                    .title_bottom(Line::from("(Ctrl+n)").alignment(Alignment::Right)),
             ),
             form_layout[1],
         );
@@ -150,7 +152,8 @@ impl App {
                 Block::new()
                     .borders(Borders::ALL)
                     .title("Type")
-                    .style(type_style),
+                    .style(type_style)
+                    .title_bottom(Line::from("(Ctrl+t)").alignment(Alignment::Right)),
             )
             .highlight_symbol(">> ")
             .highlight_style(Style::default().fg(Color::Cyan));
@@ -172,7 +175,8 @@ impl App {
                 Block::new()
                     .borders(Borders::ALL)
                     .title("PARA category")
-                    .style(category_style),
+                    .style(category_style)
+                    .title_bottom(Line::from("(Ctrl+c)").alignment(Alignment::Right)),
             )
             .highlight_symbol(">> ")
             .highlight_style(Style::default().fg(Color::Cyan));
@@ -194,7 +198,8 @@ impl App {
                 Block::new()
                     .borders(Borders::ALL)
                     .title("TINO files")
-                    .style(tino_files_style),
+                    .style(tino_files_style)
+                    .title_bottom(Line::from("(Ctrl+l)").alignment(Alignment::Right)),
             )
             .highlight_symbol(">> ")
             .highlight_style(Style::default().fg(Color::Cyan));
@@ -211,7 +216,11 @@ impl App {
         };
         frame.render_widget(
             Paragraph::new(Text::from(self.file_to_preview.clone()).bold().white())
-                .block(Block::new().borders(Borders::ALL))
+                .block(
+                    Block::new()
+                        .borders(Borders::ALL)
+                        .title_bottom(Line::from("(Ctrl+p)").alignment(Alignment::Right)),
+                )
                 .style(file_preview_style)
                 .wrap(Wrap { trim: true })
                 .scroll((self.scroll_position.0, 0)),
@@ -254,6 +263,26 @@ impl App {
             }
             (_, KeyCode::Tab) => {
                 self.active_field = (self.active_field + 1) % 5;
+                Ok(())
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('n')) => {
+                self.active_field = 0;
+                Ok(())
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('t')) => {
+                self.active_field = 1;
+                Ok(())
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('c')) => {
+                self.active_field = 2;
+                Ok(())
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('l')) => {
+                self.active_field = 3;
+                Ok(())
+            }
+            (KeyModifiers::CONTROL, KeyCode::Char('p')) => {
+                self.active_field = 4;
                 Ok(())
             }
             (_, KeyCode::Down | KeyCode::Char('j'))
