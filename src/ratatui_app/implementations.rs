@@ -248,8 +248,7 @@ impl App {
     /// Handles the key events and updates the state of [`App`].
     fn on_key_event(&mut self, key: KeyEvent) -> anyhow::Result<()> {
         match (key.modifiers, key.code) {
-            (_, KeyCode::Esc)
-            | (KeyModifiers::CONTROL, KeyCode::Char('c') | KeyCode::Char('C')) => {
+            (_, KeyCode::Esc) => {
                 self.quit();
                 Ok(())
             }
