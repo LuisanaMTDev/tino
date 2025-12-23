@@ -34,10 +34,10 @@ cargo install tinao
     Windows: `C:\Users\<username>\AppData\Roaming`
     MacOS: `/Users/<username>/Library/Application Support`
 
-    > [!WARNING]
-    > Only Linux has tested, Windows will be tested.
-    > I will thanks if someone can test it on MacOS,
-    > because I don't have a machine with MacOS.
+> [!WARNING]
+> Only Linux has tested, Windows will be tested.
+> I will thanks if someone can test it on MacOS,
+> because I don't have a machine with MacOS.
 
 2. Add your custom path for each TINO directory.
 
@@ -58,9 +58,9 @@ academic_notes_dir = "~/school"
 - Up and Down, or j and k, for vim/nvim user,: Scroll through types, categories, TINO files and file preview.
 - Enter on File name element to create file.
 - Enter on file from TINO files list to open editor.
-    > [!WARNING]
-    > tino use $EDITOR env var or vim command if the env var isn't set.
-    > This feature doesn't work in Windows yet.
+> [!WARNING]
+> tino use $EDITOR env var or vim command if the env var isn't set.
+> This feature doesn't work in Windows yet.
 - v on a file from TINO files list to preview file content in File preview element.
 - Ctrl+n: Go to File name element.
 - Ctrl+t: Go to Type element.
